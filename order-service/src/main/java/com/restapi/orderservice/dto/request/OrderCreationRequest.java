@@ -1,0 +1,26 @@
+package com.restapi.orderservice.dto.request;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class OrderCreationRequest {
+
+    String userAddressId;
+
+    String shippingName;
+    String shippingPhone;
+    String shippingProvince;
+    String shippingDistrict;
+    String shippingWard;
+    String shippingStreet;
+
+    @Builder.Default
+    String paymentMethod = "COD";
+
+    String note;
+}

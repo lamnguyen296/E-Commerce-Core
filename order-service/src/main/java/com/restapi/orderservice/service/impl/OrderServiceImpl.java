@@ -55,9 +55,11 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderItemDTO::getProductId)
                 .distinct()
                 .toList();
+        log.info("Product ids [{}]", productIds);
 
         // 2. Gọi sang Product Service qua WebClient để lấy thông tin sản phẩm và tồn kho
         List<ProductDTO> products = productClient.getProductsByIds(new ProductFilter(productIds));
+        log.info("Finish to send get products from product-service with size [{}]", products.size());
 
         // 3. Đưa danh sách sản phẩm vào Map để tra cứu O(1)
         Map<String, ProductDTO> productPriceMap = new HashMap<>();
@@ -71,6 +73,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus("NEW");
         order.setTotalAmount(BigDecimal.ZERO);
         Order savedOrder = orderRepository.save(order);
+        log.info("Created new order [{}]", savedOrder.getId());
 
         // 5. Duyệt từng item để validate và tính tiền
         BigDecimal totalAmount = BigDecimal.ZERO;

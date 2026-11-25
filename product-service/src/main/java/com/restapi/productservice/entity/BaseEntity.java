@@ -22,7 +22,9 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public abstract class BaseEntity {
+public abstract class BaseEntity implements java.io.Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

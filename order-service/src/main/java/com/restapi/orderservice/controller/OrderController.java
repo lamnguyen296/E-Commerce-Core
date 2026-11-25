@@ -30,6 +30,7 @@ public class OrderController {
      */
     @PostMapping
     public ResponseEntity<BaseResponse<Order>> createOrder(@Valid @RequestBody OrderDTO orderDTO) {
+        log.info("Receive a new request creating order [{}]", orderDTO);
         return ResponseEntity.ok().body(new BaseResponse<>(orderService.createOrder(orderDTO),
                 "Create order successfully !", null));
     }

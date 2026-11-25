@@ -30,7 +30,7 @@ public class ProductClientImpl implements ProductClient {
 
         try {
             BaseResponse<List<ProductDTO>> response = webClient.post()
-                    .uri("http://localhost:8081/ecommerce/v1/products/search")
+                    .uri("http://product-service/ecommerce/v1/products/search")
                     .bodyValue(productFilter)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<BaseResponse<List<ProductDTO>>>() {})

@@ -4,6 +4,7 @@ import com.restapi.productservice.dto.request.CreateProductReq;
 import com.restapi.productservice.dto.request.LockProductItem;
 import com.restapi.productservice.dto.request.LockProductReq;
 import com.restapi.productservice.dto.request.ProductFilter;
+import com.restapi.productservice.dto.request.UpdateProductReq;
 import com.restapi.productservice.dto.response.ProductResponse;
 import com.restapi.productservice.dto.response.ProductVariantResponse;
 import com.restapi.productservice.entity.Category;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import com.restapi.productservice.exception.AppException;
+import com.restapi.productservice.exception.ApplicationException;
 import com.restapi.productservice.exception.ErrorCode;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -65,12 +67,36 @@ public class ProductServiceImpl implements ProductService {
                         ? createProductReq.getName().toLowerCase().replaceAll("[^a-z0-9]+", "-") + "-" + UUID.randomUUID().toString().substring(0, 8) 
                         : UUID.randomUUID().toString())
                 .build();
-        return productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
+        log.info("Created new product successfully with id [{}]", savedProduct.getId());
+        return savedProduct;
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = {"product_search"}, allEntries = true)
+    @CacheEvict(value = "products", allEntries = true)
+    public Product update(String id, UpdateProductReq updateProductReq) {
+        var existedCategoryOptional = categoryRepository.findById(updateProductReq.getCategoryId());
+        if (existedCategoryOptional.isEmpty()) {
+            throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
+        }
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        product.setName(updateProductReq.getName());
+        product.setDescription(updateProductReq.getDescription());
+        product.setPrice(updateProductReq.getPrice());
+        product.setStock(updateProductReq.getStock());
+        product.setCategory(existedCategoryOptional.get());
+        product.setImageUrl(updateProductReq.getImageUrl());
+        product.setBrand(updateProductReq.getBrand());
+        Product updatedProduct = productRepository.save(product);
+        log.info("Updated product [{}] successfully", id);
+        return updatedProduct;
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
     public void lock(LockProductReq lockProductReq) {
         if (lockProductReq == null || lockProductReq.getItems() == null || lockProductReq.getItems().isEmpty()) {
             return;
@@ -134,8 +160,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Cacheable(value = "product_search", key = "#productFilter.ids")
     public List<Product> search(ProductFilter productFilter) {
+        log.info("Get product with filter {}", productFilter);
         if (productFilter == null || productFilter.getIds() == null || productFilter.getIds().isEmpty()) {
             return List.of();
         }
@@ -157,10 +183,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse getProductById(String id) {
+    /*
+     value = "products" -> tên cache
+     key = "#id" -> cache theo productId
+    */
+    @Cacheable(value = "products", key = "#id")
+    public Product getProductById(String id) {
+        log.info("Get product by id [{}]", id);
         return productRepository.findById(id)
-                .map(this::enrichProductResponse)
-                .orElse(null);
+                .orElseThrow(() -> new ApplicationException("Product with id " + id + " not found"));
     }
 
     @Override

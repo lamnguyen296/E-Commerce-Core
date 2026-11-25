@@ -1,6 +1,5 @@
 package com.restapi.orderservice.configuration;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,20 +51,20 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
+        // Uy quyen bao mat cho API Gateway: Cho phep request da qua Gateway duoc vao xu ly
         httpSecurity.authorizeHttpRequests(request ->
-                request.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll()
-                        .requestMatchers(CART_ENDPOINTS).permitAll()
-                        .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
-                        .anyRequest().authenticated());
+                request.anyRequest().permitAll()
+        );
 
+        /* Tat co che xac thuc JWT noi bo cu vi API Gateway da dam nhiem xac thuc voi Keycloak
         httpSecurity.oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwtConfigurer ->
                                 jwtConfigurer.decoder(customJwtDecoder)
                                         .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
         );
+        */
+
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 
         return httpSecurity.build();

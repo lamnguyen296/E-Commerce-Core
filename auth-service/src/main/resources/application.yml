@@ -1,0 +1,14 @@
+server:
+  port: 8701
+
+spring:
+  application:
+    name: vtidtn2506_auth_service
+
+keycloak:
+  auth-server-url: http://localhost:8180
+  realm: KeycloackMicroService
+  resource: backend
+  credentials:
+    secret: 04jWSnv96nryp1v0OnX4bL5F1JiKkS8v
+

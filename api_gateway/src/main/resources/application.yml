@@ -1,0 +1,38 @@
+server:
+  port: 8282
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/v1/orders/**
+          filters:
+            - PrefixPath=/ecommerce
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/v1/products/**
+          filters:
+            - PrefixPath=/ecommerce
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/KeycloackMicroService
+          jwk-set-uri: http://localhost:8180/realms/KeycloackMicroService/protocol/openid-connect/certs
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    root: info
